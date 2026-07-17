@@ -15,7 +15,6 @@ type Cache[V any] interface {
 // Di dalam struct ini, buat satu properti bernama 'items' yang berupa map.
 // Map tersebut harus memiliki Key bertipe string, dan Value bertipe V.
 type MemoryCache[V any] struct {
-    // TUGAS ANDA: Deklarasikan properti 'items' berupa map di sini[cite: 51].
 		items map[string]V
 }
 
@@ -25,7 +24,6 @@ type MemoryCache[V any] struct {
 // jika tidak akan menyebabkan Panic (Fatal Error).
 func New[V any]() *MemoryCache[V] {
     return &MemoryCache[V]{
-        // TUGAS ANDA: Inisialisasi properti 'items' menggunakan fungsi make()
 				items: make(map[string]V),
     }
 }
