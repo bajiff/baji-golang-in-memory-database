@@ -1,56 +1,61 @@
 package cache
 
-import "sync"
+import "sync" // Package bawaan Golang untuk urusan Concurrency
 
-// 1. Buat Interface bernama 'Cache' dengan tipe Generic [V any].
-// Interface ini wajib memiliki 3 metode dasar:
-// - Set(key string, value V)
-// - Get(key string) (V, bool)
-// - Delete(key string)
 type Cache[V any] interface {
 	Set(key string, value V)
 	Get(key string) (V, bool)
 	Delete(key string)
 }
 
-// 2. Buat Struct bernama 'MemoryCache' dengan tipe Generic [V any].
-// Di dalam struct ini, buat satu properti bernama 'items' yang berupa map.
-// Map tersebut harus memiliki Key bertipe string, dan Value bertipe V.
-type MemoryCache[V any] struct {
-	mu sync.RWMutex
-		items map[string]V
+type Item[V any] struct {
+	Value V
+	Expiration int64
 }
 
-// 3. Buat fungsi 'New' sebagai Constructor (Pabrik).
-// Fungsi ini bertugas mencetak objek MemoryCache baru yang siap pakai.
-// Ingat, map di Golang harus diinisialisasi dengan 'make' sebelum digunakan, 
-// jika tidak akan menyebabkan Panic (Fatal Error).
+// 1. Modifikasi Struct
+type MemoryCache[V any] struct {
+    // Menambahkan RWMutex ke dalam cetak biru laci kita[cite: 1]
+    mu    sync.RWMutex 
+    items map[string]Item[V]
+}
+
 func New[V any]() *MemoryCache[V] {
     return &MemoryCache[V]{
-				items: make(map[string]V),
+        items: make(map[string]Item[V]),
+        // mu tidak perlu di-make, otomatis siap digunakan karena berupa struct bawaan.
     }
 }
-// 1. Method SET (Memasukkan barang ke laci)
-// (c *MemoryCache[V]) adalah Receiver. 'c' adalah inisial dari Cache.
+
+// 2. Modifikasi Method SET (Write - Mengubah Data)
 func (c *MemoryCache[V]) Set(key string, value V) {
-	// TUGAS ANDA: Masukkan parameter 'value' ke dalam properti map 'items' milik 'c' 
-	// menggunakan 'key' sebagai indeksnya.
-	c.items[key] = value
+    // TUGAS ANDA: Panggil fungsi Lock() pada properti 'mu' milik 'c' 
+    // untuk mengunci akses tulis secara eksklusif[cite: 1].
+		c.mu.Lock()
+		defer c.mu.Unlock()
+    // TUGAS ANDA: Gunakan kata kunci 'defer' diikuti fungsi Unlock() pada properti 'mu' 
+    // agar kunci OTOMATIS dikembalikan saat fungsi selesai[cite: 1].
+    c.items[key] = Item[V]{
+			Value: value,
+			Expiration: 0,
+		}
+    
+    // Masukkan data (Kode Anda sebelumnya sudah benar)
 }
 
-// 2. Method GET (Mengambil barang dari laci)
+// 3. Modifikasi Method GET (Read - Melihat Data)
 func (c *MemoryCache[V]) Get(key string) (V, bool) {
-	// TUGAS ANDA: Ambil nilai dari map berdasarkan 'key'.
-	// Ingat, map di Go mengembalikan 2 nilai secara berurutan: data dan status boolean.
-	// Kembalikan (return) kedua nilai tersebut agar aman dari Edge Cases.
-	nilai, ditemukan := c.items[key]
-	return nilai, ditemukan
-	
-}
-
-// 3. Method DELETE (Membuang barang dari laci)
-func (c *MemoryCache[V]) Delete(key string) {
-	// TUGAS ANDA: Gunakan fungsi bawaan Go yaitu delete(map, key) 
-	// untuk menghapus data dari memori.
-	delete(c.items, key)
+    // TUGAS ANDA: Karena ini hanya membaca, panggil RLock() (Read Lock) pada 'mu'.
+    // Ini mengizinkan ribuan pembacaan secara bersamaan[cite: 1].
+		c.mu.RLock()
+		defer c.mu.RUnlock()
+    
+    // TUGAS ANDA: Gunakan 'defer' diikuti fungsi RUnlock() (Read Unlock) pada 'mu'.
+    
+    item, ditemukan := c.items[key]
+		if !ditemukan {
+			var zero V
+			return  zero, false
+		}
+    return item.Value, true
 }
