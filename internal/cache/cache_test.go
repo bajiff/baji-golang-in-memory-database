@@ -23,15 +23,12 @@ func TestSetAndGet(t *testing.T) {
 	// TUGAS ANDA 2: Panggil fungsi Get milik 'testCache' untuk mengambil 'kunciTest'.
 	// Simpan kembaliannya di variabel 'hasil' dan 'ditemukan'.
 	hasil, ditemukan := testCache.Get(kunciTest); 
-	
+
 	// 3. Inspektur Mutu Melakukan Evaluasi (Verifikasi)
 	if !ditemukan {
 		// t.Errorf akan menggagalkan pengetesan jika kondisi ini terjadi
 		t.Errorf("GAGAL: Data seharusnya ada, tapi dilaporkan tidak ditemukan.")
 	} else if hasil != nilaiTest {
 		t.Errorf("GAGAL: Data yang diambil tidak cocok. Harapan: %s, Realita: %s", nilaiTest, hasil)
-	} else {
-		t.Error("GAGAL: Diluar pengetesan")
-	}
-
+	} 
 }
